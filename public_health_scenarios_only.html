@@ -1,0 +1,384 @@
+<div style="padding: 1rem 0;">
+<h2 class="sr-only">Public health classroom scenarios game: students play decision-maker through ten realistic public health dilemmas across four rounds.</h2>
+
+<div id="ph-game" style="font-family: var(--font-sans);">
+
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 12px;">
+    <div>
+      <div style="font-size: 18px; font-weight: 500;">You're in charge: public health decisions</div>
+      <div id="ph-round-label" style="font-size: 13px; color: var(--color-text-secondary); margin-top: 2px;">Welcome</div>
+    </div>
+    <div style="display: flex; gap: 8px;">
+      <div style="background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 8px 12px; min-width: 70px;">
+        <div style="font-size: 11px; color: var(--color-text-secondary);">Case</div>
+        <div id="ph-qnum" style="font-size: 16px; font-weight: 500;">—</div>
+      </div>
+      <div style="background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 8px 12px; min-width: 70px;">
+        <div style="font-size: 11px; color: var(--color-text-secondary);">Score</div>
+        <div id="ph-score" style="font-size: 16px; font-weight: 500;">0</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="background: var(--color-background-secondary); height: 6px; border-radius: 999px; overflow: hidden; margin-bottom: 1.5rem;">
+    <div id="ph-progress" style="background: var(--color-text-primary); height: 100%; width: 0%; transition: width 0.3s ease;"></div>
+  </div>
+
+  <div id="ph-stage" style="min-height: 360px;"></div>
+
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; gap: 8px;">
+    <button id="ph-back" style="font-size: 13px;">← Back</button>
+    <div id="ph-status" style="font-size: 12px; color: var(--color-text-secondary); text-align: center; flex: 1;"></div>
+    <button id="ph-next" style="font-size: 13px;">Next →</button>
+  </div>
+
+</div>
+
+<style>
+  .ph-choice {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 14px 16px;
+    margin-bottom: 8px;
+    background: var(--color-background-primary);
+    border: 0.5px solid var(--color-border-tertiary);
+    border-radius: var(--border-radius-md);
+    font-size: 14px;
+    font-family: var(--font-sans);
+    color: var(--color-text-primary);
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+    line-height: 1.5;
+  }
+  .ph-choice:hover:not(:disabled) {
+    background: var(--color-background-secondary);
+    border-color: var(--color-border-secondary);
+  }
+  .ph-choice.correct {
+    background: var(--color-background-success);
+    border-color: var(--color-border-success);
+    color: var(--color-text-success);
+  }
+  .ph-choice.wrong {
+    background: var(--color-background-danger);
+    border-color: var(--color-border-danger);
+    color: var(--color-text-danger);
+  }
+  .ph-choice:disabled { cursor: default; }
+  .ph-explain {
+    margin-top: 12px;
+    padding: 12px 14px;
+    background: var(--color-background-secondary);
+    border-radius: var(--border-radius-md);
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--color-text-secondary);
+  }
+  .ph-pill {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 999px;
+    margin-bottom: 10px;
+  }
+  .ph-scenario-body {
+    background: var(--color-background-secondary);
+    border-left: 3px solid var(--color-border-secondary);
+    padding: 12px 16px;
+    border-radius: var(--border-radius-md);
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+</style>
+
+<script>
+(function() {
+  const scenarios = [
+    {
+      round: "Round 1 · Health literacy",
+      pill: { bg: "var(--color-background-info)", fg: "var(--color-text-info)" },
+      setup: "A wellness influencer with 2M followers claims a $40 supplement 'cleanses toxins' and prevents cancer. A parent at your clinic asks if their kid should take it. You have 5 minutes.",
+      q: "Best response?",
+      choices: [
+        "Tell them flatly it's a scam and move on — there's no evidence",
+        "Recommend they try it if it gives peace of mind — placebo can help",
+        "Ask what they're worried about, share what the actual evidence shows, and explain how to evaluate health claims (who funded the study, peer review, etc.)",
+        "Refer them to a specialist for further evaluation"
+      ],
+      correct: 2,
+      explain: "Health literacy isn't 'tell people what to think' — it's teaching the skill of evaluating information. Dismissing them (A) damages trust. Endorsing it (B) is unethical. Referring (D) wastes resources on a non-medical problem. The middle path respects the parent AND builds a skill they'll use the next 100 times this comes up."
+    },
+    {
+      round: "Round 1 · Health literacy",
+      pill: { bg: "var(--color-background-info)", fg: "var(--color-text-info)" },
+      setup: "A new study (one study, small sample) finds people who drink 4 cups of coffee daily have 12% lower rates of a specific cancer. Headlines scream COFFEE CURES CANCER. Your school newspaper asks for a quote.",
+      q: "What do you tell them?",
+      choices: [
+        "Coffee is now recommended for cancer prevention",
+        "One small study isn't enough — we need replication, larger samples, and to rule out other explanations like the kind of people who drink coffee being different to begin with",
+        "Avoid coffee until more research is done",
+        "Studies are unreliable in general — trust your gut"
+      ],
+      correct: 1,
+      explain: "'Correlation isn't causation' is the cliche, but the real public health skill is asking: was this replicated? How big was the sample? What confounders weren't measured? Coffee drinkers might exercise more, sleep less, be wealthier. One study is a hypothesis, not a conclusion. (D) throws out science entirely, which is its own trap."
+    },
+    {
+      round: "Round 2 · Outbreaks",
+      pill: { bg: "var(--color-background-warning)", fg: "var(--color-text-warning)" },
+      setup: "Day 1 of an outbreak: 14 students at your school have flu-like symptoms in 3 days. Parents are calling. The local news wants a statement. Superintendent wants the school closed by tomorrow. You're the public health officer.",
+      q: "First move?",
+      choices: [
+        "Close the school — better safe than sorry",
+        "Wait 48 hours to see if more cases develop before acting",
+        "Interview the sick students about shared exposures (food, classes, sports) and start tracking new cases by day",
+        "Mass test every student in the building"
+      ],
+      correct: 2,
+      explain: "Closing without data (A) wastes huge political capital and might be wrong — what if it's all from one cafeteria? Waiting (B) loses critical hours. Mass testing (D) is expensive and doesn't tell you WHY. Case-finding first: who's sick, what do they share. Closure may follow — but evidence-based, not panic-based."
+    },
+    {
+      round: "Round 2 · Outbreaks",
+      pill: { bg: "var(--color-background-warning)", fg: "var(--color-text-warning)" },
+      setup: "Day 5: Investigation reveals the outbreak is norovirus from contaminated cafeteria food. 40 students now sick, none seriously. Cafeteria already cleaned. A reporter asks whether you'll publicly name the food vendor.",
+      q: "What do you do?",
+      choices: [
+        "Name the vendor immediately — the public has a right to know",
+        "Don't name them — that's defamation if you're wrong",
+        "Confirm the source with lab evidence first, notify the vendor privately to allow correction, then disclose publicly with context once confirmed",
+        "Refer the question to the school's lawyers and decline to comment"
+      ],
+      correct: 2,
+      explain: "Naming too early (A) can be wrong and irreversibly harms a business. Hiding (B, D) erodes trust. Public health communication is about transparency WITH accuracy. Confirm the source, give the named party a chance to respond, then disclose. This is the same principle used in food safety recalls — the FDA doesn't just blast names without confirmation."
+    },
+    {
+      round: "Round 3 · Equity",
+      pill: { bg: "var(--color-background-success)", fg: "var(--color-text-success)" },
+      setup: "Your city has high childhood asthma rates concentrated in 2 neighborhoods. Both have older housing, more traffic, and fewer trees. Budget allows ONE intervention.",
+      q: "Where do you put the money?",
+      choices: [
+        "Free inhalers and asthma medication for every kid in those zip codes",
+        "A new community health clinic in the affected area",
+        "Inspect and remediate housing (mold, pests, ventilation) plus traffic-reduction measures near schools",
+        "Asthma education and self-management classes for families"
+      ],
+      correct: 2,
+      explain: "(A) and (B) treat asthma after it's triggered — important but reactive. (D) puts the burden on families to manage a problem caused by their environment. The upstream move addresses WHY asthma is concentrated here. Caveat: in real life you'd want all four eventually. But forced to pick one, the structural fix prevents the most cases, including in kids not yet born."
+    },
+    {
+      round: "Round 3 · Equity",
+      pill: { bg: "var(--color-background-success)", fg: "var(--color-text-success)" },
+      setup: "Two communities need flu vaccine outreach. Community A: middle-class, 60% already vaccinated, easy to reach. Community B: lower-income, 30% vaccinated, harder to reach, historically distrusts the health system. You can fund outreach in only one this year.",
+      q: "Where do you focus?",
+      choices: [
+        "Community A — you'll get higher vaccination numbers, which looks better in reports",
+        "Community B — the gap is bigger and the need is greater, even though it's harder",
+        "Split funding 50/50 to be fair",
+        "Skip both and run a generic citywide campaign"
+      ],
+      correct: 1,
+      explain: "This is the equity-vs-equality distinction. (C) sounds fair but underfunds the place that needs more. (A) optimizes for metrics, not health. (D) is the 'we treated everyone the same' move that consistently widens gaps. Real equity work means putting resources where need is highest — even when it's harder and produces less impressive headline numbers."
+    },
+    {
+      round: "Round 4 · You're in charge",
+      pill: { bg: "var(--color-background-danger)", fg: "var(--color-text-danger)" },
+      setup: "A school survey shows 30% of students report persistent sadness. Anxiety referrals are up. The board offers one funded option for next year.",
+      q: "Which do you push for?",
+      choices: [
+        "Hire a second guidance counselor to handle individual crisis cases",
+        "Universal social-emotional curriculum + screening to identify struggling students + clear referral pathway to existing community therapists",
+        "Mandatory mindfulness app subscriptions for all students",
+        "Increase suspension for behavioral issues to maintain order"
+      ],
+      correct: 1,
+      explain: "(A) only catches kids already in crisis — too late for many. (C) is the trendy answer but evidence on app-only interventions is thin, especially without human follow-up. (D) is what schools historically did, and it harms the kids most likely to be struggling. Tiered support (universal + screening + referral) is what evidence backs. Worth discussing: screening only works if there's somewhere to refer kids TO."
+    },
+    {
+      round: "Round 4 · You're in charge",
+      pill: { bg: "var(--color-background-danger)", fg: "var(--color-text-danger)" },
+      setup: "Your county hits 100°F+ days 30 times each summer now, up from 8 a decade ago. ER visits for heat illness rose 40%, mostly elderly, outdoor workers, and people without AC. Council wants action but the budget is limited.",
+      q: "Highest-impact first move?",
+      choices: [
+        "Citywide PSA campaign telling people to hydrate and stay indoors",
+        "Buy and distribute window AC units to every household that requests one",
+        "Map heat-vulnerable residents, open cooling centers in their neighborhoods with transit access, and start a buddy-check system for isolated elderly",
+        "Mandate that all outdoor workers stop work at 95°F"
+      ],
+      correct: 2,
+      explain: "(A) is cheap but PSAs alone barely move outcomes — and assume people have AC to retreat to. (B) sounds generous but costs are huge, and AC units raise electric bills the poorest can't pay. (D) is the right idea but harder to enforce as a first step. Vulnerability mapping + accessible cooling + welfare checks is the evidence-based combo — but reasonable people could argue (D) belongs in the package too."
+    },
+    {
+      round: "Round 4 · You're in charge",
+      pill: { bg: "var(--color-background-danger)", fg: "var(--color-text-danger)" },
+      setup: "Childhood vaccination rates dropped from 95% to 82% in 5 years. Measles is spreading. Most hesitant parents aren't anti-science — they're confused, busy, or distrustful of authorities. Some had bad experiences with the medical system. The state offers two funded options.",
+      q: "Pick one:",
+      choices: [
+        "Pass a state mandate eliminating non-medical exemptions, with fines for non-compliance",
+        "Fund trusted local messengers — pediatricians, faith leaders, parent ambassadors from the affected communities — to have honest one-on-one conversations and make appointments easy",
+        "Launch a graphic ad campaign showing children hospitalized with measles",
+        "Require unvaccinated families to attend mandatory education sessions"
+      ],
+      correct: 1,
+      explain: "Mandates (A) work in some contexts but often harden opposition and create political backlash — especially with already-distrustful communities. Fear ads (C) and mandatory education (D) tend to entrench resistance, per multiple studies. Trust gets rebuilt person-by-person. Caveat for discussion: in a severe active outbreak, some mandates (school exclusion of unvaccinated kids) ARE evidence-based — context matters."
+    },
+    {
+      round: "Round 4 · You're in charge",
+      pill: { bg: "var(--color-background-danger)", fg: "var(--color-text-danger)" },
+      setup: "A low-income neighborhood is a 'food desert.' No grocery store within 2 miles, 6 fast food spots, 4 corner stores selling mostly processed food. Diabetes rates double the city average. You have one year of funding.",
+      q: "Best use of one year:",
+      choices: [
+        "Subsidize a full-service grocery store to open in the neighborhood",
+        "Pay corner stores to stock fresh produce and partner with a local farm for supply, plus add a bus route to existing supermarkets",
+        "Run nutrition education classes at the community center",
+        "Tax fast food restaurants to push them out of the neighborhood"
+      ],
+      correct: 1,
+      explain: "Tricky one. (A) sounds best — and IS the long-term goal — but grocery stores in food deserts have a HIGH failure rate when imposed top-down without addressing demand and transit. (C) alone fails when there's nothing to buy. (D) often backfires and removes affordable food without replacing it. The corner-store + transit play is faster, cheaper, more sustainable, and respects what residents already use. Open for debate — some experts strongly prefer (A) if the funding can sustain it."
+    }
+  ];
+
+  let idx = -1;
+  let score = 0;
+  let answered = {};
+
+  const stage = document.getElementById('ph-stage');
+  const scoreEl = document.getElementById('ph-score');
+  const qnumEl = document.getElementById('ph-qnum');
+  const labelEl = document.getElementById('ph-round-label');
+  const progEl = document.getElementById('ph-progress');
+  const statusEl = document.getElementById('ph-status');
+  const backBtn = document.getElementById('ph-back');
+  const nextBtn = document.getElementById('ph-next');
+
+  function render() {
+    if (idx === -1) renderWelcome();
+    else if (idx >= scenarios.length) renderEnd();
+    else renderScenario();
+    updateChrome();
+  }
+
+  function updateChrome() {
+    scoreEl.textContent = score;
+    if (idx === -1) {
+      qnumEl.textContent = "—";
+      labelEl.textContent = "Welcome";
+      progEl.style.width = "0%";
+    } else if (idx >= scenarios.length) {
+      qnumEl.textContent = `${scenarios.length} / ${scenarios.length}`;
+      labelEl.textContent = "Wrap up";
+      progEl.style.width = "100%";
+    } else {
+      qnumEl.textContent = `${idx + 1} / ${scenarios.length}`;
+      labelEl.textContent = scenarios[idx].round;
+      progEl.style.width = `${((idx + 1) / scenarios.length) * 100}%`;
+    }
+    backBtn.disabled = (idx <= -1);
+    nextBtn.disabled = (idx >= scenarios.length);
+    statusEl.textContent = idx >= 0 && idx < scenarios.length && answered[idx] === undefined
+      ? "Discuss as a class, then commit to an answer"
+      : "";
+  }
+
+  function renderWelcome() {
+    stage.innerHTML = `
+      <div style="text-align: center; padding: 1.5rem 1rem;">
+        <div style="font-size: 22px; font-weight: 500; margin-bottom: 12px;">10 real public health dilemmas.</div>
+        <div style="font-size: 14px; color: var(--color-text-secondary); line-height: 1.7; max-width: 500px; margin: 0 auto 1.5rem;">
+          You're the decision-maker. Each case has tradeoffs — there's no obvious right answer. Discuss as a class, vote, then see what evidence suggests.
+          <br><br>
+          ~30 minutes for full play. Stop anywhere.
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; max-width: 580px; margin: 0 auto 1.5rem; text-align: left;">
+          <div style="background: var(--color-background-info); padding: 10px 14px; border-radius: var(--border-radius-md); font-size: 13px; color: var(--color-text-info);">
+            <div style="font-weight: 500; margin-bottom: 2px;">Round 1</div>Health literacy
+          </div>
+          <div style="background: var(--color-background-warning); padding: 10px 14px; border-radius: var(--border-radius-md); font-size: 13px; color: var(--color-text-warning);">
+            <div style="font-weight: 500; margin-bottom: 2px;">Round 2</div>Outbreaks
+          </div>
+          <div style="background: var(--color-background-success); padding: 10px 14px; border-radius: var(--border-radius-md); font-size: 13px; color: var(--color-text-success);">
+            <div style="font-weight: 500; margin-bottom: 2px;">Round 3</div>Equity
+          </div>
+          <div style="background: var(--color-background-danger); padding: 10px 14px; border-radius: var(--border-radius-md); font-size: 13px; color: var(--color-text-danger);">
+            <div style="font-weight: 500; margin-bottom: 2px;">Round 4</div>Mixed topics
+          </div>
+        </div>
+        <button onclick="window.__phStart()" style="font-size: 14px; padding: 10px 24px;">Start case 1 →</button>
+      </div>
+    `;
+  }
+
+  function renderScenario() {
+    const s = scenarios[idx];
+    const ans = answered[idx];
+
+    let choicesHTML = s.choices.map((c, i) => {
+      let cls = 'ph-choice';
+      if (ans !== undefined) {
+        if (i === s.correct) cls += ' correct';
+        else if (i === ans) cls += ' wrong';
+      }
+      const disabled = ans !== undefined ? 'disabled' : '';
+      return `<button class="${cls}" ${disabled} onclick="window.__phAnswer(${i})">
+        <span style="display:inline-block; width: 22px; font-weight: 500; vertical-align: top;">${String.fromCharCode(65+i)}.</span><span style="display: inline-block; width: calc(100% - 28px);">${c}</span>
+      </button>`;
+    }).join('');
+
+    const explainHTML = ans !== undefined
+      ? `<div class="ph-explain"><strong style="color: var(--color-text-primary);">What the evidence suggests:</strong> ${s.explain}</div>`
+      : '';
+
+    stage.innerHTML = `
+      <div>
+        <span class="ph-pill" style="background: ${s.pill.bg}; color: ${s.pill.fg};">
+          ${s.round} · case ${idx + 1}
+        </span>
+        <div class="ph-scenario-body">${s.setup}</div>
+        <div style="font-size: 15px; line-height: 1.6; margin-bottom: 12px; font-weight: 500;">
+          ${s.q}
+        </div>
+        ${choicesHTML}
+        ${explainHTML}
+      </div>
+    `;
+  }
+
+  function renderEnd() {
+    let blurb;
+    if (score >= scenarios.length - 1) blurb = "Strong public health intuition. You're seeing the tradeoffs.";
+    else if (score >= scenarios.length - 3) blurb = "Solid — you got the structural thinking right.";
+    else if (score >= scenarios.length / 2) blurb = "Good — and the answers you got 'wrong' are usually defensible too. That's the point.";
+    else blurb = "Score doesn't really matter here. These are debates real officials lose sleep over.";
+
+    stage.innerHTML = `
+      <div style="text-align: center; padding: 1.5rem 1rem;">
+        <div style="font-size: 22px; font-weight: 500; margin-bottom: 12px;">${score} / ${scenarios.length}</div>
+        <div style="font-size: 14px; color: var(--color-text-secondary); margin-bottom: 1.5rem;">${blurb}</div>
+        <div style="background: var(--color-background-secondary); padding: 16px; border-radius: var(--border-radius-md); text-align: left; max-width: 540px; margin: 0 auto 1.5rem; font-size: 13px; line-height: 1.7;">
+          <div style="font-weight: 500; color: var(--color-text-primary); margin-bottom: 8px;">Exit ticket prompt</div>
+          Pick the case where you disagreed with the 'correct' answer the most. Write 3 sentences: what you'd actually do, and why. There's no wrong answer — public health officials disagree on these too.
+        </div>
+        <button onclick="window.__phReset()" style="font-size: 13px;">Play again</button>
+      </div>
+    `;
+  }
+
+  window.__phStart = function() { idx = 0; render(); };
+  window.__phReset = function() { idx = -1; score = 0; answered = {}; render(); };
+  window.__phAnswer = function(i) {
+    if (answered[idx] !== undefined) return;
+    answered[idx] = i;
+    if (i === scenarios[idx].correct) score++;
+    render();
+  };
+
+  backBtn.addEventListener('click', () => { if (idx > -1) { idx--; render(); } });
+  nextBtn.addEventListener('click', () => { if (idx < scenarios.length) { idx++; render(); } });
+
+  render();
+})();
+</script>
+</div>
